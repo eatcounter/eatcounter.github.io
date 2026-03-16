@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Counter | Dashboard Hub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', system-ui, sans-serif; background: #f8f9fa; color: #1e293b; min-height: 100vh; }
+
+/* Auth Gate */
+#auth-gate {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  min-height: 100vh; background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%);
+}
+#auth-gate .logo { font-size: 32px; font-weight: 800; color: #fff; letter-spacing: -0.5px; margin-bottom: 8px; }
+#auth-gate .subtitle { font-size: 14px; color: rgba(255,255,255,0.5); margin-bottom: 40px; }
+#auth-gate .signin-box {
+  background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 16px; padding: 40px; text-align: center;
+}
+#auth-gate .signin-box p { color: rgba(255,255,255,0.7); font-size: 14px; margin-bottom: 24px; }
+#auth-denied { display: none; color: #ef4444; font-size: 13px; margin-top: 16px; }
+
+/* Main content */
+#app { display: none; }
+.header {
+  background: #fff; border-bottom: 1px solid #e2e8f0; padding: 20px 40px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.header-left { display: flex; align-items: center; gap: 16px; }
+.header .logo { font-size: 22px; font-weight: 800; color: #1e293b; letter-spacing: -0.5px; }
+.header .divider { width: 1px; height: 24px; background: #e2e8f0; }
+.header .page-title { font-size: 15px; font-weight: 500; color: #64748b; }
+.user-info { display: flex; align-items: center; gap: 10px; font-size: 13px; color: #64748b; }
+.user-avatar {
+  width: 32px; height: 32px; border-radius: 50%; background: #2563eb;
+  color: #fff; display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 13px;
+}
+
+.container { max-width: 960px; margin: 0 auto; padding: 48px 24px; }
+.welcome { margin-bottom: 40px; }
+.welcome h1 { font-size: 28px; font-weight: 800; color: #0f172a; margin-bottom: 6px; }
+.welcome p { font-size: 15px; color: #64748b; }
+
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+
+.tile {
+  background: #fff; border: 1px solid #e2e8f0; border-radius: 16px;
+  padding: 28px; cursor: pointer; transition: all 0.15s ease;
+  text-decoration: none; color: inherit; display: block; position: relative;
+}
+.tile:hover { border-color: #2563eb; box-shadow: 0 4px 24px rgba(37,99,235,0.08); transform: translateY(-2px); }
+.tile-icon {
+  width: 48px; height: 48px; border-radius: 12px; display: flex;
+  align-items: center; justify-content: center; font-size: 22px; margin-bottom: 16px;
+}
+.tile-icon.blue { background: rgba(37,99,235,0.08); color: #2563eb; }
+.tile-icon.green { background: rgba(22,163,74,0.08); color: #16a34a; }
+.tile-icon.amber { background: rgba(245,158,11,0.08); color: #f59e0b; }
+.tile-icon.purple { background: rgba(124,58,237,0.08); color: #7c3aed; }
+.tile h3 { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
+.tile p { font-size: 13px; color: #64748b; line-height: 1.5; }
+.tile .arrow {
+  position: absolute; top: 28px; right: 24px; font-size: 18px; color: #cbd5e1;
+  transition: all 0.15s ease;
+}
+.tile:hover .arrow { color: #2563eb; transform: translateX(3px); }
+.tile .tag {
+  display: inline-block; margin-top: 12px; padding: 3px 10px; border-radius: 100px;
+  font-size: 11px; font-weight: 600;
+}
+.tag-live { background: rgba(22,163,74,0.08); color: #16a34a; }
+.tag-beta { background: rgba(245,158,11,0.08); color: #f59e0b; }
+
+.footer { text-align: center; padding: 40px; font-size: 12px; color: #94a3b8; }
+</style>
+</head>
+<body>
+
+<!-- Auth Gate -->
+<div id="auth-gate">
+  <div class="logo">COUNTER</div>
+  <div class="subtitle">Internal Dashboards</div>
+  <div class="signin-box">
+    <p>Sign in with your Counter email to continue</p>
+    <div id="g_id_onload"
+      data-client_id="276164175939-osgitprijsjasvft5c1r9kb8d450vd9u.apps.googleusercontent.com"
+      data-callback="handleAuth"
+      data-auto_prompt="false">
+    </div>
+    <div class="g_id_signin" data-type="standard" data-size="large" data-theme="filled_blue" data-text="sign_in_with" data-shape="pill"></div>
+    <div id="auth-denied"></div>
+  </div>
+</div>
+
+<!-- App -->
+<div id="app">
+  <div class="header">
+    <div class="header-left">
+      <div class="logo">COUNTER</div>
+      <div class="divider"></div>
+      <div class="page-title">Dashboard Hub</div>
+    </div>
+    <div class="user-info">
+      <span id="user-name"></span>
+      <div class="user-avatar" id="user-avatar"></div>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="welcome">
+      <h1>Dashboards</h1>
+      <p>Analytics, monitoring, and tools for the Counter team.</p>
+    </div>
+
+    <div class="grid" id="tiles"></div>
+  </div>
+
+  <div class="footer">Counter (Macrofy Inc.) &middot; Internal use only</div>
+</div>
+
+<script>
+var ALLOWED = ['jeff@eatcounter.com', 'benn@eatcounter.com'];
+
+var DASHBOARDS = [
+  {
+    title: 'SPINS Analytics',
+    desc: 'Velocity, distribution, share, promo, growth drivers, SKU, retailer comparison, and buyer recommendations for Frozen Entrees.',
+    icon: 'S',
+    color: 'blue',
+    url: '/spins-dashboard/',
+    tag: 'live'
+  },
+  {
+    title: 'Automation Monitor',
+    desc: 'Real-time status of all cron jobs, APIs, and background processes running on Mac Mini.',
+    icon: 'A',
+    color: 'green',
+    url: 'https://bought-attend-realtor-glucose.trycloudflare.com',
+    tag: 'live'
+  },
+  {
+    title: 'GitHub Repository',
+    desc: '34 scripts, CI/CD pipeline, automated deploys. The source code for all Counter automations.',
+    icon: 'G',
+    color: 'purple',
+    url: 'https://github.com/eatcounter/counter-automations',
+    tag: 'live'
+  }
+];
+
+function handleAuth(response) {
+  var payload = JSON.parse(atob(response.credential.split('.')[1]));
+  var email = payload.email;
+  if (ALLOWED.indexOf(email) === -1) {
+    document.getElementById('auth-denied').style.display = 'block';
+    document.getElementById('auth-denied').textContent = 'Access denied: ' + email + ' is not authorized.';
+    return;
+  }
+  document.getElementById('auth-gate').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  var name = payload.name || email.split('@')[0];
+  document.getElementById('user-name').textContent = name;
+  document.getElementById('user-avatar').textContent = name.charAt(0).toUpperCase();
+  renderTiles();
+}
+
+function renderTiles() {
+  var html = '';
+  for (var i = 0; i < DASHBOARDS.length; i++) {
+    var d = DASHBOARDS[i];
+    var tagHtml = d.tag === 'live' ? '<span class="tag tag-live">Live</span>' : '<span class="tag tag-beta">Beta</span>';
+    html += '<a class="tile" href="' + d.url + '" target="_blank">';
+    html += '<div class="tile-icon ' + d.color + '">' + d.icon + '</div>';
+    html += '<span class="arrow">&rarr;</span>';
+    html += '<h3>' + d.title + '</h3>';
+    html += '<p>' + d.desc + '</p>';
+    html += tagHtml;
+    html += '</a>';
+  }
+  document.getElementById('tiles').innerHTML = html;
+}
+</script>
+</body>
+</html>
